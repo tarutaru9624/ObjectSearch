@@ -98,7 +98,7 @@ sub HighlightShapeString(searchString As String)
     On Error GoTo ErrorHighlightShapeString
     index = InStr(1, searchedShapes(currentShapeIndex).TextFrame.Characters.Text, searchString, vbTextCompare)      ' 文字列検索 検索文字列が含まれる場合、戻り値に位置番号
     Do While index > 0          ' 文字列が見つからなくなるまで
-        searchedShapes(currentShapeIndex).TextFrame.TextRange.Characters(index, Len(searchString)).Font.Fill.BackColor.RGB = RGB(255, 255, 0)     ' 背景色を設定
+        searchedShapes(currentShapeIndex).TextFrame.TextRange.Characters(index, Len(searchString)).Font.Glow.Radius = 3 ' 光彩の半径を設定
         index = InStr(index + 1, searchedShapes(currentShapeIndex).TextFrame.Characters.Text, searchString)         ' 文字列検索 検索文字列が含まれる場合、戻り値に位置番号
     Loop
 
@@ -115,7 +115,7 @@ End SUb
 sub ClearHighlightShape()
 
     On Error GoTo ErrorClearHighlightShape
-    searchedShapes(currentShapeIndex).TextFrame.TextRange.Font.Fill.BackColor.RGB = RGB(255, 255, 255)     ' 背景色を設定
+    searchedShapes(currentShapeIndex).TextFrame.TextRange.Font.Glow.Radius = 0 ' 光彩の半径を設定
 
 ErrorClearHighlightShape:
     MsgBox "ハイライトのクリアでエラーが発生しました"
