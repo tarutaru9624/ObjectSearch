@@ -10,6 +10,7 @@ Dim searchSheet As Worksheet        ' 検索シート
 
 ' 図形の検索範囲モード
 Enum RangeMode
+    none
     sheet
     book
 End Enum
@@ -62,6 +63,9 @@ Sub SearchShapes(rangeMode As RangeMode, searchString As String)
             MsgBox "検索範囲が不正です。"
             Exit Sub
     End Select
+
+    currentShapeIndex = 1
+
     Exit Sub
 
 ErrorSearchShapes:
@@ -207,3 +211,94 @@ Sub ReplaceAllText(searchString As String, replaceString As String)
 ErrorReplaceAllText:
     MsgBox "図形の参照でエラーが発生しました"
 End Sub
+
+
+'------------------------------------------------------------------------------------------------------------------------
+' 検索ボタン押下時処理
+' 内容：検索ボタン押下時の処理
+'------------------------------------------------------------------------------------------------------------------------
+Sub btnSearchAll_Click()
+
+    Dim searchString As String  ' 検索文字列
+
+    On Error GoTo ErrorbtnSearchAll_Click
+
+    searchString = txtSearchString.Text
+    Call SearchShapes(cmbSearchRange.ListIndex, searchString)     ' 図形検索
+    Call ShowShape()        ' 図形に移動
+    Call HighlightShapeString(searchString)     ' 文字列にハイライト付与
+    Exit Sub
+
+ErrorbtnSearchAll_Click:
+    MsgBox "検索ボタンの処理でエラーが発生しました"
+End Sub
+
+
+'------------------------------------------------------------------------------------------------------------------------
+' 次を検索ボタン押下時処理
+' 内容：次を検索ボタン押下時の処理
+'------------------------------------------------------------------------------------------------------------------------
+Sub btnSearchNextShape_Click()
+
+    Dim searchString As String  ' 検索文字列
+
+    On Error GoTo ErrorbtnSearchNextShape_Click
+
+    searchString = txtSearchString.Text
+
+    Call ClearHighlightShape()      ' 文字列のハイライトをクリア
+    Call SearchNextShape(SearchMode.nextShape)    ' 次の図形を対象に変更
+    Call ShowShape()        ' 図形に移動
+    Call HighlightShapeString(searchString)     ' 文字列にハイライト付与
+    Exit Sub
+
+ErrorbtnSearchNextShape_Click:
+    MsgBox "次を検索ボタンの処理でエラーが発生しました"
+End Sub
+
+
+'------------------------------------------------------------------------------------------------------------------------
+' １つ前を検索ボタン押下時処理
+' 内容：１つ前を検索ボタン押下時の処理
+'------------------------------------------------------------------------------------------------------------------------
+Sub btnSearchPrevShape_Click()
+
+    Dim searchString As String  ' 検索文字列
+
+    On Error GoTo ErrorbtnSearchPrevShape_Click
+
+    searchString = txtSearchString.Text
+
+    Call ClearHighlightShape()      ' 文字列のハイライトをクリア
+    Call SearchNextShape(SearchMode.prevShape)    ' 次の図形を対象に変更
+    Call ShowShape()        ' 図形に移動
+    Call HighlightShapeString(searchString)     ' 文字列にハイライト付与
+    Exit Sub
+
+ErrorbtnSearchPrevShape_Click:
+    MsgBox "１つ前を検索ボタンの処理でエラーが発生しました"
+End Sub
+
+'------------------------------------------------------------------------------------------------------------------------
+' 置換ボタン押下時処理
+' 内容：置換ボタン押下時の処理
+'------------------------------------------------------------------------------------------------------------------------
+Sub btnReplaceShape_Click()
+
+    Dim searchString As String  ' 検索文字列
+    Dim replaceString As String ' 置換文字列
+
+    On Error GoTo ErrorbtnReplaceShape_Click
+
+    searchString = txtSearchString.Text
+    replaceString = txtReplaceString.Text
+
+    Call ClearHighlightShape()      ' 文字列のハイライトをクリア
+    Call ReplaceShapeText(searchString, replaceString)  ' 文字列を置換
+    Call HighlightShapeString(searchString)     ' 文字列にハイライト付与
+    Exit Sub
+
+ErrorbtnReplaceShape_Click:
+    MsgBox "置換ボタンの処理でエラーが発生しました"
+End Sub
+
