@@ -26,9 +26,9 @@ End Enum
 ' 図形検索
 ' 内容：検索文字列が含まれる図形を抽出してコレクションする
 ' 引数1：rangeMode 図形の検索範囲モード
-' 引数2：searchString 検索する文字列
+' 引数2：searchText 検索する文字列
 '------------------------------------------------------------------------------------------------------------------------
-Sub SearchShapes(rangeMode As RangeMode, searchString As String)
+Sub SearchShapes(rangeMode As RangeMode, searchText As String)
   
     Dim shape As Shape              ' 図形
     Dim sheet As Worksheet          ' シート
@@ -41,7 +41,7 @@ Sub SearchShapes(rangeMode As RangeMode, searchString As String)
         Case RangeMode.sheet
             Set searchSheet = ActiveSheet           ' アクティブシートを取得
             For Each shape In ActiveSheet.Shapes    ' シート内の図形を取得
-                If InStr(1, shape.TextFrame.Characters.Text, searchString, vbTextCompare) > 0 Then    ' 文字列検索 検索文字列が含まれる場合、戻り値に位置番号
+                If InStr(1, shape.TextFrame.Characters.Text, searchText, vbTextCompare) > 0 Then    ' 文字列検索 検索文字列が含まれる場合、戻り値に位置番号
                     searchedShapes.Add shape        ' コレクションに図形を追加
                 End If
             Next shape
@@ -51,7 +51,7 @@ Sub SearchShapes(rangeMode As RangeMode, searchString As String)
             Set searchBook = ActiveWorkbook         ' アクティブブックを取得
             For Each sheet In ThisWorkbook.Sheets   ' ブック内のシートを取得
                 For Each shape In sheet.Shapes      ' シート内の図形を取得
-                    If InStr(1, shape.TextFrame.Characters.Text, searchString, vbTextCompare) > 0 Then    ' 文字列検索 検索文字列が含まれる場合、戻り値に位置番号
+                    If InStr(1, shape.TextFrame.Characters.Text, searchText, vbTextCompare) > 0 Then    ' 文字列検索 検索文字列が含まれる場合、戻り値に位置番号
                         searchedShapes.Add shape    ' コレクションに図形を追加
                     End If
                 Next shape
@@ -65,6 +65,7 @@ Sub SearchShapes(rangeMode As RangeMode, searchString As String)
     End Select
 
     currentShapeIndex = 1
+    lblShapesNum.Caption = currentShapeIndex & " / " & searchedShapes.Count       ' 図形数表示
 
     Exit Sub
 
@@ -98,18 +99,18 @@ End Sub
 '------------------------------------------------------------------------------------------------------------------------
 ' ハイライト付与
 ' 内容：図形内の検索文字列にハイライトをつける
-' 引数1：searchString 検索する文字列
+' 引数1：searchText 検索する文字列
 '------------------------------------------------------------------------------------------------------------------------
-sub HighlightShapeString(searchString As String)
+sub HighlightShapeString(searchText As String)
 
     Dim index As Integer        ' 先頭位置
 
     On Error GoTo ErrorHighlightShapeString
 
-    index = InStr(1, searchedShapes(currentShapeIndex).TextFrame.Characters.Text, searchString, vbTextCompare)      ' 文字列検索 検索文字列が含まれる場合、戻り値に位置番号
+    index = InStr(1, searchedShapes(currentShapeIndex).TextFrame.Characters.Text, searchText, vbTextCompare)      ' 文字列検索 検索文字列が含まれる場合、戻り値に位置番号
     Do While index > 0          ' 文字列が見つからなくなるまで
-        searchedShapes(currentShapeIndex).TextFrame.TextRange.Characters(index, Len(searchString)).Font.Glow.Radius = 3 ' 光彩の半径を設定
-        index = InStr(index + 1, searchedShapes(currentShapeIndex).TextFrame.Characters.Text, searchString)         ' 文字列検索 検索文字列が含まれる場合、戻り値に位置番号
+        searchedShapes(currentShapeIndex).TextFrame.TextRange.Characters(index, Len(searchText)).Font.Glow.Radius = 3 ' 光彩の半径を設定
+        index = InStr(index + 1, searchedShapes(currentShapeIndex).TextFrame.Characters.Text, searchText)         ' 文字列検索 検索文字列が含まれる場合、戻り値に位置番号
     Loop
     Exit Sub
 
@@ -168,6 +169,8 @@ Sub SearchNextShape(targetshape As SearchMode)
             MsgBox "検索対象の図形が不正です。"
             Exit Sub
     End Select
+
+    lblShapesNum.Caption = currentShapeIndex & " / " & searchedShapes.Count       ' 図形数表示
     Exit Sub
 
 ErrorSearchNextShape:
@@ -178,13 +181,13 @@ End Sub
 '------------------------------------------------------------------------------------------------------------------------
 ' 文字列を置換する
 ' 内容：検索文字列を置換文字列に置換する
-' 引数1：searchString 検索文字列
-' 引数2：replaceString 置換文字列
+' 引数1：searchText 検索文字列
+' 引数2：replaceText 置換文字列
 '------------------------------------------------------------------------------------------------------------------------
-Sub ReplaceShapeText(searchString As String, replaceString As String)
+Sub ReplaceShapeText(searchText As String, replaceText As String)
 
     On Error GoTo ErrorReplaceShapeText
-    searchedShapes(currentShapeIndex).TextFrame.Characters.Text = Replace(searchedShapes(currentShapeIndex).TextFrame.Characters.Text, searchString, replaceString) '文字列の置換
+    searchedShapes(currentShapeIndex).TextFrame.Characters.Text = Replace(searchedShapes(currentShapeIndex).TextFrame.Characters.Text, searchText, replaceText) '文字列の置換
     Exit Sub
 
 ErrorReplaceShapeText:
@@ -195,16 +198,16 @@ End Sub
 '------------------------------------------------------------------------------------------------------------------------
 ' すべての図形で文字列を置換する
 ' 内容：すべての図形で検索文字列を置換文字列に置換する
-' 引数1：searchString 検索文字列
-' 引数2：replaceString 置換文字列
+' 引数1：searchText 検索文字列
+' 引数2：replaceText 置換文字列
 '------------------------------------------------------------------------------------------------------------------------
-Sub ReplaceAllText(searchString As String, replaceString As String)
+Sub ReplaceAllText(searchText As String, replaceText As String)
 
     On Error GoTo ErrorReplaceAllText
 
     For shapeIndex To searchedShapes.Count                      ' 検索図形コレクションの回数実行
         currentShapeIndex = shapeIndex                          ' 図形インデックスを更新
-        Call ReplaceShapeText(searchString, replaceString)      ' 文字列の置換
+        Call ReplaceShapeText(searchText, replaceText)      ' 文字列の置換
     Next shapeIndex
     Exit Sub
 
@@ -219,14 +222,14 @@ End Sub
 '------------------------------------------------------------------------------------------------------------------------
 Sub btnSearchAll_Click()
 
-    Dim searchString As String  ' 検索文字列
+    Dim searchText As String  ' 検索文字列
 
     On Error GoTo ErrorbtnSearchAll_Click
 
-    searchString = txtSearchString.Text
-    Call SearchShapes(cmbSearchRange.ListIndex, searchString)     ' 図形検索
+    searchText = txtSearchString.Text
+    Call SearchShapes(cmbSearchRange.ListIndex, searchText)     ' 図形検索
     Call ShowShape()        ' 図形に移動
-    Call HighlightShapeString(searchString)     ' 文字列にハイライト付与
+    Call HighlightShapeString(searchText)     ' 文字列にハイライト付与
     Exit Sub
 
 ErrorbtnSearchAll_Click:
@@ -240,16 +243,16 @@ End Sub
 '------------------------------------------------------------------------------------------------------------------------
 Sub btnSearchNextShape_Click()
 
-    Dim searchString As String  ' 検索文字列
+    Dim searchText As String  ' 検索文字列
 
     On Error GoTo ErrorbtnSearchNextShape_Click
 
-    searchString = txtSearchString.Text
+    searchText = txtSearchString.Text
 
     Call ClearHighlightShape()      ' 文字列のハイライトをクリア
     Call SearchNextShape(SearchMode.nextShape)    ' 次の図形を対象に変更
     Call ShowShape()        ' 図形に移動
-    Call HighlightShapeString(searchString)     ' 文字列にハイライト付与
+    Call HighlightShapeString(searchText)     ' 文字列にハイライト付与
     Exit Sub
 
 ErrorbtnSearchNextShape_Click:
@@ -263,16 +266,16 @@ End Sub
 '------------------------------------------------------------------------------------------------------------------------
 Sub btnSearchPrevShape_Click()
 
-    Dim searchString As String  ' 検索文字列
+    Dim searchText As String  ' 検索文字列
 
     On Error GoTo ErrorbtnSearchPrevShape_Click
 
-    searchString = txtSearchString.Text
+    searchText = txtSearchString.Text
 
     Call ClearHighlightShape()      ' 文字列のハイライトをクリア
     Call SearchNextShape(SearchMode.prevShape)    ' 次の図形を対象に変更
     Call ShowShape()        ' 図形に移動
-    Call HighlightShapeString(searchString)     ' 文字列にハイライト付与
+    Call HighlightShapeString(searchText)     ' 文字列にハイライト付与
     Exit Sub
 
 ErrorbtnSearchPrevShape_Click:
@@ -285,20 +288,52 @@ End Sub
 '------------------------------------------------------------------------------------------------------------------------
 Sub btnReplaceShape_Click()
 
-    Dim searchString As String  ' 検索文字列
-    Dim replaceString As String ' 置換文字列
+    Dim searchText As String  ' 検索文字列
+    Dim replaceText As String ' 置換文字列
 
     On Error GoTo ErrorbtnReplaceShape_Click
 
-    searchString = txtSearchString.Text
-    replaceString = txtReplaceString.Text
+    searchText = txtSearchString.Text
+    replaceText = txtReplaceString.Text
 
     Call ClearHighlightShape()      ' 文字列のハイライトをクリア
-    Call ReplaceShapeText(searchString, replaceString)  ' 文字列を置換
-    Call HighlightShapeString(searchString)     ' 文字列にハイライト付与
+    Call ReplaceShapeText(searchText, replaceText)  ' 文字列を置換
+    Call HighlightShapeString(searchText)     ' 文字列にハイライト付与
     Exit Sub
 
 ErrorbtnReplaceShape_Click:
     MsgBox "置換ボタンの処理でエラーが発生しました"
 End Sub
 
+
+'------------------------------------------------------------------------------------------------------------------------
+' まとめて置換ボタン押下時処理
+' 内容：まとめて置換ボタン押下時の処理
+'------------------------------------------------------------------------------------------------------------------------
+Sub btnReplaceAll_Click()
+
+    Dim searchText As String  ' 検索文字列
+    Dim replaceText As String ' 置換文字列
+
+    On Error GoTo ErrorbtnReplaceAll_Click
+
+    searchText = txtSearchString.Text
+    replaceText = txtReplaceString.Text
+
+    Call ClearHighlightShape()      ' 文字列のハイライトをクリア
+    Call ReplaceAllText(searchText, replaceText)  ' 文字列を置換
+    Call HighlightShapeString(searchText)     ' 文字列にハイライト付与
+    Exit Sub
+
+ErrorbtnReplaceAll_Click:
+    MsgBox "まとめて置換ボタンの処理でエラーが発生しました"
+End Sub
+
+
+'------------------------------------------------------------------------------------------------------------------------
+' ユーザーフォームを閉じるときの処理
+' 内容：ユーザーフォームの終了ボタン押下時の処理
+'------------------------------------------------------------------------------------------------------------------------
+Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
+    Call ClearHighlightShape()      ' 文字列のハイライトをクリア
+End Sub
