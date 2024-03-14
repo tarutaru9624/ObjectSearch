@@ -10,7 +10,6 @@ Dim searchSheet As Worksheet        ' 検索シート
 
 ' 図形の検索範囲モード
 Enum RangeMode
-    none
     sheet
     book
 End Enum
@@ -66,7 +65,7 @@ Sub SearchShapes(rangeMode As RangeMode, searchText As String)
 
     currentShapeIndex = 1
     lblShapesNum.Caption = currentShapeIndex & " / " & searchedShapes.Count       ' 図形数表示
-
+    Call isEnableButton(False)               ' すべて検索ボタンを無効化
     Exit Sub
 
 ErrorSearchShapes:
@@ -334,6 +333,70 @@ End Sub
 ' ユーザーフォームを閉じるときの処理
 ' 内容：ユーザーフォームの終了ボタン押下時の処理
 '------------------------------------------------------------------------------------------------------------------------
-Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
+Private Sub FormObjectSearch_QueryClose(Cancel As Integer, CloseMode As Integer)
+
+    On Error GoTo ErrorFormObjectSearch_QueryClose
     Call ClearHighlightShape()      ' 文字列のハイライトをクリア
+    Exit Sub
+
+ErrorFormObjectSearch_QueryClose:
+    MsgBox "終了処理でエラーが発生しました"
+End Sub
+
+
+'------------------------------------------------------------------------------------------------------------------------
+' ユーザーフォームの初期化処理
+' 内容：ユーザーフォームの初期化処理
+'------------------------------------------------------------------------------------------------------------------------
+Sub FormObjectSearch_Initialize()
+
+    On Error GoTo ErrorFormObjectSearch_Initialize
+    Call isEnableButton(True)               ' すべて検索ボタンを有効化
+    With cmbSearchRange
+        .AddItem "シート"
+        .AddItem "ブック"
+        .ListIndex = 0                      ' インデックス0番を初期値とする
+    End With
+    Exit Sub
+
+ErrorFormObjectSearch_Initialize:
+    MsgBox "初期化処理でエラーが発生しました"
+End Sub
+
+'------------------------------------------------------------------------------------------------------------------------
+' ボタンの有効/無効切替
+' 内容：ボタンの有効/無効を切り替える
+' 引数：searchAllEnable すべて検索ボタンの有効/無効 
+'------------------------------------------------------------------------------------------------------------------------
+Sub isEnableButton(searchAllEnable As Bool)
+
+    On Error GoTo ErrorisEnableButton
+    If searchAllEnable == True Then
+        btnSearchAll.Enabled = True             ' すべて検索ボタンを有効化
+        btnSearchNextShape.Enabled = False      ' 次を検索ボタンを無効化
+        btnSearchPrevShape.Enabled = False      ' 前を検索ボタンを無効化
+        btnReplaceShape.Enabled = False         ' 置換ボタンを無効化
+    Else
+        btnSearchAll.Enabled = False            ' すべて検索ボタンを無効化
+        btnSearchNextShape.Enabled = True       ' 次を検索ボタンを有効化
+        btnSearchPrevShape.Enabled = True       ' 前を検索ボタンを有効化
+        btnReplaceShape.Enabled = True          ' 置換ボタンを有効化
+    Endif
+    Exit Sub
+
+ErrorisEnableButton:
+    MsgBox "ボタンの有効/無効切替でエラーが発生しました"
+End Sub
+
+'------------------------------------------------------------------------------------------------------------------------
+' 検索文字列変更時処理
+' 内容：検索文字列が変更された時、ボタンの有効/無効を切り替える
+'------------------------------------------------------------------------------------------------------------------------
+Sub txtSearchText_Change()
+    On Error GoTo ErrortxtSearchText_Change
+    Call isEnableButton(True)               ' すべて検索ボタンを有効化
+    Exit Sub
+
+ErrortxtSearchText_Change:
+    MsgBox "検索文字列変更時処理でエラーが発生しました"
 End Sub
