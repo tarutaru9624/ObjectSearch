@@ -226,7 +226,7 @@ Sub btnSearchAll_Click()
 
     On Error GoTo ErrorbtnSearchAll_Click
 
-    searchText = txtSearchString.Text
+    searchText = txtSearchText.Text
     Call SearchShapes(cmbSearchRange.ListIndex, searchText)     ' 図形検索
     Call ShowShape()        ' 図形に移動
     Call HighlightShapeString(searchText)     ' 文字列にハイライト付与
@@ -247,7 +247,7 @@ Sub btnSearchNextShape_Click()
 
     On Error GoTo ErrorbtnSearchNextShape_Click
 
-    searchText = txtSearchString.Text
+    searchText = txtSearchText.Text
 
     Call ClearHighlightShape()      ' 文字列のハイライトをクリア
     Call SearchNextShape(SearchMode.nextShape)    ' 次の図形を対象に変更
@@ -270,7 +270,7 @@ Sub btnSearchPrevShape_Click()
 
     On Error GoTo ErrorbtnSearchPrevShape_Click
 
-    searchText = txtSearchString.Text
+    searchText = txtSearchText.Text
 
     Call ClearHighlightShape()      ' 文字列のハイライトをクリア
     Call SearchNextShape(SearchMode.prevShape)    ' 次の図形を対象に変更
@@ -293,8 +293,8 @@ Sub btnReplaceShape_Click()
 
     On Error GoTo ErrorbtnReplaceShape_Click
 
-    searchText = txtSearchString.Text
-    replaceText = txtReplaceString.Text
+    searchText = txtSearchText.Text
+    replaceText = txtReplaceText.Text
 
     Call ClearHighlightShape()      ' 文字列のハイライトをクリア
     Call ReplaceShapeText(searchText, replaceText)  ' 文字列を置換
@@ -317,8 +317,8 @@ Sub btnReplaceAll_Click()
 
     On Error GoTo ErrorbtnReplaceAll_Click
 
-    searchText = txtSearchString.Text
-    replaceText = txtReplaceString.Text
+    searchText = txtSearchText.Text
+    replaceText = txtReplaceText.Text
 
     Call ClearHighlightShape()      ' 文字列のハイライトをクリア
     Call ReplaceAllText(searchText, replaceText)  ' 文字列を置換
