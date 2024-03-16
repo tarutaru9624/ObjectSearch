@@ -40,7 +40,7 @@ Sub SearchShapes(rangeSpecified As RangeMode, searchText As String)
         Case RangeMode.sheet
             Set searchedShapes = New Collection     ' 検索図形コレクションの生成
             Set searchSheet = ActiveSheet           ' アクティブシートを取得
-            For Each shape In ActiveSheet.Shapes    ' シート内の図形を取得
+            For Each shape In searchSheet.Shapes    ' シート内の図形を取得
                 If InStr(1, shape.TextFrame.Characters.Text, searchText, vbTextCompare) > 0 Then    ' 文字列検索 検索文字列が含まれる場合、戻り値に位置番号
                     searchedShapes.Add shape        ' コレクションに図形を追加
                 End If
@@ -50,7 +50,7 @@ Sub SearchShapes(rangeSpecified As RangeMode, searchText As String)
         Case RangeMode.book
             Set searchedShapes = New Collection     ' 検索図形コレクションの生成
             Set searchBook = ActiveWorkbook         ' アクティブブックを取得
-            For Each sheet In ThisWorkbook.Sheets   ' ブック内のシートを取得
+            For Each sheet In searchBook.Sheets   ' ブック内のシートを取得
                 For Each shape In sheet.Shapes      ' シート内の図形を取得
                     If InStr(1, shape.TextFrame.Characters.Text, searchText, vbTextCompare) > 0 Then    ' 文字列検索 検索文字列が含まれる場合、戻り値に位置番号
                         searchedShapes.Add shape    ' コレクションに図形を追加
