@@ -27,17 +27,18 @@ End Enum
 ' 引数1：rangeMode 図形の検索範囲モード
 ' 引数2：searchText 検索する文字列
 '------------------------------------------------------------------------------------------------------------------------
-Sub SearchShapes(rangeMode As RangeMode, searchText As String)
+Sub SearchShapes(rangeSpecified As RangeMode, searchText As String)
   
     Dim shape As Shape              ' 図形
     Dim sheet As Worksheet          ' シート
 
     On Error GoTo ErrorSearchShapes
     '検索範囲モードによって処理を分岐
-    Select Case rangeMode
+    Select Case rangeSpecified
 
         ' シート内検索
         Case RangeMode.sheet
+            Set searchedShapes = New Collection     ' 検索図形コレクションの生成
             Set searchSheet = ActiveSheet           ' アクティブシートを取得
             For Each shape In ActiveSheet.Shapes    ' シート内の図形を取得
                 If InStr(1, shape.TextFrame.Characters.Text, searchText, vbTextCompare) > 0 Then    ' 文字列検索 検索文字列が含まれる場合、戻り値に位置番号
@@ -47,6 +48,7 @@ Sub SearchShapes(rangeMode As RangeMode, searchText As String)
 
         ' ブック全体検索
         Case RangeMode.book
+            Set searchedShapes = New Collection     ' 検索図形コレクションの生成
             Set searchBook = ActiveWorkbook         ' アクティブブックを取得
             For Each sheet In ThisWorkbook.Sheets   ' ブック内のシートを取得
                 For Each shape In sheet.Shapes      ' シート内の図形を取得
@@ -63,6 +65,11 @@ Sub SearchShapes(rangeMode As RangeMode, searchText As String)
             Exit Sub
     End Select
 
+    If searchedShapes.Count = 0 Then
+        MsgBox "見つかりませんでした。"
+        End
+    End If
+    
     currentShapeIndex = 1
     lblShapesNum.Caption = currentShapeIndex & " / " & searchedShapes.Count       ' 図形数表示
     Call isEnableButton(False)               ' すべて検索ボタンを無効化
@@ -148,17 +155,17 @@ Sub SearchNextShape(targetshape As SearchMode)
 
         ' 次の図形を検索する
         Case SearchMode.nextShape
-            If currentShapeIndex == searchedShapes.Count Then   ' 図形インデックスが最後の値のとき
+            If currentShapeIndex = searchedShapes.Count Then   ' 図形インデックスが最後の値のとき
                 currentShapeIndex = 1                           ' 図形インデックスを先頭に戻す
-            ElseIf
+            Else
                 currentShapeIndex = currentShapeIndex + 1       ' 図形インデックスの値を１つ増やす
             End If
 
         ' １つ前の図形を検索する
         Case SearchMode.prevShape
-            If currentShapeIndex == 1 Then                      ' 図形インデックスが先頭のとき
+            If currentShapeIndex = 1 Then                      ' 図形インデックスが先頭のとき
                 currentShapeIndex = searchedShapes.Count        ' 図形インデックスを最後の値にする
-            ElseIf
+            Else
                 currentShapeIndex = currentShapeIndex - 1       ' 図形インデックスの値を１つ減らす
             End If
 
@@ -204,7 +211,7 @@ Sub ReplaceAllText(searchText As String, replaceText As String)
 
     On Error GoTo ErrorReplaceAllText
 
-    For shapeIndex To searchedShapes.Count                      ' 検索図形コレクションの回数実行
+    For shapeIndex = 1 To searchedShapes.Count                      ' 検索図形コレクションの回数実行
         currentShapeIndex = shapeIndex                          ' 図形インデックスを更新
         Call ReplaceShapeText(searchText, replaceText)      ' 文字列の置換
     Next shapeIndex
@@ -227,8 +234,10 @@ Sub btnSearchAll_Click()
 
     searchText = txtSearchText.Text
     Call SearchShapes(cmbSearchRange.ListIndex, searchText)     ' 図形検索
-    Call ShowShape()        ' 図形に移動
-    Call HighlightShapeString(searchText)     ' 文字列にハイライト付与
+    If searchedShapes.Count > 0 Then
+        Call ShowShape()        ' 図形に移動
+        Call HighlightShapeString(searchText)     ' 文字列にハイライト付与
+    End If
     Exit Sub
 
 ErrorbtnSearchAll_Click:
@@ -248,10 +257,12 @@ Sub btnSearchNextShape_Click()
 
     searchText = txtSearchText.Text
 
-    Call ClearHighlightShape()      ' 文字列のハイライトをクリア
-    Call SearchNextShape(SearchMode.nextShape)    ' 次の図形を対象に変更
-    Call ShowShape()        ' 図形に移動
-    Call HighlightShapeString(searchText)     ' 文字列にハイライト付与
+    If searchedShapes.Count > 0 Then
+        Call ClearHighlightShape()      ' 文字列のハイライトをクリア
+        Call SearchNextShape(SearchMode.nextShape)    ' 次の図形を対象に変更
+        Call ShowShape()        ' 図形に移動
+        Call HighlightShapeString(searchText)     ' 文字列にハイライト付与
+    End If
     Exit Sub
 
 ErrorbtnSearchNextShape_Click:
@@ -271,10 +282,12 @@ Sub btnSearchPrevShape_Click()
 
     searchText = txtSearchText.Text
 
-    Call ClearHighlightShape()      ' 文字列のハイライトをクリア
-    Call SearchNextShape(SearchMode.prevShape)    ' 次の図形を対象に変更
-    Call ShowShape()        ' 図形に移動
-    Call HighlightShapeString(searchText)     ' 文字列にハイライト付与
+    If searchedShapes.Count > 0 Then
+        Call ClearHighlightShape()      ' 文字列のハイライトをクリア
+        Call SearchNextShape(SearchMode.prevShape)    ' 次の図形を対象に変更
+        Call ShowShape()        ' 図形に移動
+        Call HighlightShapeString(searchText)     ' 文字列にハイライト付与
+    End If
     Exit Sub
 
 ErrorbtnSearchPrevShape_Click:
@@ -295,9 +308,11 @@ Sub btnReplaceShape_Click()
     searchText = txtSearchText.Text
     replaceText = txtReplaceText.Text
 
-    Call ClearHighlightShape()      ' 文字列のハイライトをクリア
-    Call ReplaceShapeText(searchText, replaceText)  ' 文字列を置換
-    Call HighlightShapeString(searchText)     ' 文字列にハイライト付与
+    If searchedShapes.Count > 0 Then
+        Call ClearHighlightShape()      ' 文字列のハイライトをクリア
+        Call ReplaceShapeText(searchText, replaceText)  ' 文字列を置換
+        Call HighlightShapeString(searchText)     ' 文字列にハイライト付与
+    End If
     Exit Sub
 
 ErrorbtnReplaceShape_Click:
@@ -319,9 +334,12 @@ Sub btnReplaceAll_Click()
     searchText = txtSearchText.Text
     replaceText = txtReplaceText.Text
 
-    Call ClearHighlightShape()      ' 文字列のハイライトをクリア
-    Call ReplaceAllText(searchText, replaceText)  ' 文字列を置換
-    Call HighlightShapeString(searchText)     ' 文字列にハイライト付与
+    Call SearchShapes(cmbSearchRange.ListIndex, searchText)     ' 図形検索
+    If searchedShapes.Count > 0 Then
+        Call ClearHighlightShape()      ' 文字列のハイライトをクリア
+        Call ReplaceAllText(searchText, replaceText)  ' 文字列を置換
+        Call isEnableButton(True)               ' すべて検索ボタンを有効化
+    End If
     Exit Sub
 
 ErrorbtnReplaceAll_Click:
@@ -368,10 +386,10 @@ End Sub
 ' 内容：ボタンの有効/無効を切り替える
 ' 引数：searchAllEnable すべて検索ボタンの有効/無効 
 '------------------------------------------------------------------------------------------------------------------------
-Sub isEnableButton(searchAllEnable As Bool)
+Sub isEnableButton(searchAllEnable As Boolean)
 
     On Error GoTo ErrorisEnableButton
-    If searchAllEnable == True Then
+    If searchAllEnable = True Then
         btnSearchAll.Enabled = True             ' すべて検索ボタンを有効化
         btnSearchNextShape.Enabled = False      ' 次を検索ボタンを無効化
         btnSearchPrevShape.Enabled = False      ' 前を検索ボタンを無効化
@@ -399,4 +417,12 @@ Sub txtSearchText_Change()
 
 ErrortxtSearchText_Change:
     MsgBox "検索文字列変更時処理でエラーが発生しました"
+End Sub
+
+'------------------------------------------------------------------------------------------------------------------------
+' ユーザーフォーム起動時イベント
+' 内容：ユーザーフォームが立ち上がったタイミングで発生するイベント
+'------------------------------------------------------------------------------------------------------------------------
+Private Sub UserForm_Initialize()
+    Call FormObjectSearch_Initialize
 End Sub
