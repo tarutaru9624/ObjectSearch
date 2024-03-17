@@ -115,7 +115,10 @@ sub HighlightShapeString(searchText As String)
 
     index = InStr(1, searchedShapes(currentShapeIndex).TextFrame.Characters.Text, searchText, vbTextCompare)      ' 文字列検索 検索文字列が含まれる場合、戻り値に位置番号
     Do While index > 0          ' 文字列が見つからなくなるまで
-        searchedShapes(currentShapeIndex).TextFrame.TextRange.Characters(index, Len(searchText)).Font.Glow.Radius = 3 ' 光彩の半径を設定
+        With searchedShapes(currentShapeIndex).TextFrame2.TextRange.Characters(index, Len(searchText)).Font.Glow
+            .Color.ObjectThemeColor = msoThemeColorAccent4  ' 光彩の色を設定
+            .Radius = 18 ' 光彩の半径を設定
+        End With
         index = InStr(index + 1, searchedShapes(currentShapeIndex).TextFrame.Characters.Text, searchText)         ' 文字列検索 検索文字列が含まれる場合、戻り値に位置番号
     Loop
     Exit Sub
@@ -133,7 +136,7 @@ sub ClearHighlightShape()
 
     On Error GoTo ErrorClearHighlightShape
 
-    searchedShapes(currentShapeIndex).TextFrame.TextRange.Font.Glow.Radius = 0 ' 光彩の半径を設定
+    searchedShapes(currentShapeIndex).TextFrame2.TextRange.Characters.Font.Glow.Radius = 0 ' 光彩の半径を設定
     Exit Sub
 
 ErrorClearHighlightShape:
@@ -351,7 +354,7 @@ End Sub
 ' ユーザーフォームを閉じるときの処理
 ' 内容：ユーザーフォームの終了ボタン押下時の処理
 '------------------------------------------------------------------------------------------------------------------------
-Private Sub FormObjectSearch_QueryClose(Cancel As Integer, CloseMode As Integer)
+Private Sub FormObjectSearch_QueryClose()
 
     On Error GoTo ErrorFormObjectSearch_QueryClose
     Call ClearHighlightShape()      ' 文字列のハイライトをクリア
@@ -425,4 +428,12 @@ End Sub
 '------------------------------------------------------------------------------------------------------------------------
 Private Sub UserForm_Initialize()
     Call FormObjectSearch_Initialize
+End Sub
+
+'------------------------------------------------------------------------------------------------------------------------
+' ユーザーフォーム終了時イベント
+' 内容：ユーザーフォームを終了するタイミングで発生するイベント
+'------------------------------------------------------------------------------------------------------------------------
+Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
+    Call FormObjectSearch_QueryClose
 End Sub
