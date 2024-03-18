@@ -31,32 +31,51 @@ Sub SearchShapes(rangeSpecified As RangeMode, searchText As String)
   
     Dim shape As Shape              ' 図形
     Dim sheet As Worksheet          ' シート
+    Dim item As shape               ' グループ内図形
 
     On Error GoTo ErrorSearchShapes
     '検索範囲モードによって処理を分岐
     Select Case rangeSpecified
 
         ' シート内検索
-        Case RangeMode.sheet
-            Set searchedShapes = New Collection     ' 検索図形コレクションの生成
-            Set searchSheet = ActiveSheet           ' アクティブシートを取得
-            For Each shape In searchSheet.Shapes    ' シート内の図形を取得
-                If InStr(1, shape.TextFrame.Characters.Text, searchText, vbTextCompare) > 0 Then    ' 文字列検索 検索文字列が含まれる場合、戻り値に位置番号
-                    searchedShapes.Add shape        ' コレクションに図形を追加
+        Case rangeMode.sheet
+            Set searchedShapes = New Collection             ' 検索図形コレクションの生成
+            Set searchSheet = ActiveSheet                   ' アクティブシートを取得
+            For Each shape In searchSheet.Shapes            ' シート内の図形を取得
+                If shape.Type = msoGroup Then               ' 図形がグループ化されている時
+                    For Each item In shape.GroupItems
+                        If InStr(1, item.TextFrame.Characters.Text, searchText, vbTextCompare) > 0 Then    ' 文字列検索 検索文字列が含まれる場合、戻り値に位置番号
+                            searchedShapes.Add item         ' コレクションに図形を追加
+                        End If
+                    Next item
+                Else                                        ' 図形がグループ化されていない時
+                    If InStr(1, shape.TextFrame.Characters.Text, searchText, vbTextCompare) > 0 Then    ' 文字列検索 検索文字列が含まれる場合、戻り値に位置番号
+                        searchedShapes.Add shape            ' コレクションに図形を追加
+                    End If
                 End If
+                
             Next shape
 
         ' ブック全体検索
-        Case RangeMode.book
-            Set searchedShapes = New Collection     ' 検索図形コレクションの生成
-            Set searchBook = ActiveWorkbook         ' アクティブブックを取得
-            For Each sheet In searchBook.Sheets   ' ブック内のシートを取得
-                For Each shape In sheet.Shapes      ' シート内の図形を取得
-                    If InStr(1, shape.TextFrame.Characters.Text, searchText, vbTextCompare) > 0 Then    ' 文字列検索 検索文字列が含まれる場合、戻り値に位置番号
-                        searchedShapes.Add shape    ' コレクションに図形を追加
+        Case rangeMode.book
+            Set searchedShapes = New Collection             ' 検索図形コレクションの生成
+            Set searchBook = ActiveWorkbook                 ' アクティブブックを取得
+            For Each sheet In searchBook.Sheets             ' ブック内のシートを取得
+                For Each shape In sheet.Shapes              ' シート内の図形を取得
+                    If shape.Type = msoGroup Then           ' 図形がグループ化されている時
+                        For Each item In shape.GroupItems
+                            If InStr(1, item.TextFrame.Characters.Text, searchText, vbTextCompare) > 0 Then    ' 文字列検索 検索文字列が含まれる場合、戻り値に位置番号
+                                searchedShapes.Add item     ' コレクションに図形を追加
+                            End If
+                        Next item
+                    Else                                    ' 図形がグループ化されていない時
+                        If InStr(1, shape.TextFrame.Characters.Text, searchText, vbTextCompare) > 0 Then        ' 文字列検索 検索文字列が含まれる場合、戻り値に位置番号
+                            searchedShapes.Add shape        ' コレクションに図形を追加
+                        End If
                     End If
                 Next shape
             Next sheet
+
 
         ' 上記以外
         Case Else
@@ -88,12 +107,14 @@ Sub ShowShape()
 
     Dim shapeRow As Integer     ' 図形左上の行番号
     Dim shapeColumn As Integer  ' 図形左上の列番号
+    Dim shapeSheet As Worksheet ' 図形のシート
 
     On Error GoTo ErrorShowShape
 
     shapeRow = searchedShapes(currentShapeIndex).TopLeftCell.Row            ' 図形の左上の行番号を取得
     shapeColumn = searchedShapes(currentShapeIndex).TopLeftCell.Column      ' 図形の左上の列番号を取得
-    Application.Goto Cells(shapeRow, shapeColumn), True  ' 図形の左上が画面の左上に来るように画面移動
+    Set shapeSheet = searchedShapes(currentShapeIndex).TopLeftCell.Worksheet    ' 図形のシートを取得
+    Application.Goto shapeSheet.Cells(shapeRow, shapeColumn), True  ' 図形の左上が画面の左上に来るように画面移動
     Exit Sub
     
 ErrorShowShape:
@@ -212,6 +233,8 @@ End Sub
 '------------------------------------------------------------------------------------------------------------------------
 Sub ReplaceAllText(searchText As String, replaceText As String)
 
+    Dim shapeIndex As Integer    ' 図形番号
+
     On Error GoTo ErrorReplaceAllText
 
     For shapeIndex = 1 To searchedShapes.Count                      ' 検索図形コレクションの回数実行
@@ -236,6 +259,11 @@ Sub btnSearchAll_Click()
     On Error GoTo ErrorbtnSearchAll_Click
 
     searchText = txtSearchText.Text
+
+    If searchText = "" Then
+        Exit Sub
+    End If
+
     Call SearchShapes(cmbSearchRange.ListIndex, searchText)     ' 図形検索
     If searchedShapes.Count > 0 Then
         Call ShowShape()        ' 図形に移動
@@ -259,6 +287,10 @@ Sub btnSearchNextShape_Click()
     On Error GoTo ErrorbtnSearchNextShape_Click
 
     searchText = txtSearchText.Text
+
+    If searchText = "" Then
+        Exit Sub
+    End If
 
     If searchedShapes.Count > 0 Then
         Call ClearHighlightShape()      ' 文字列のハイライトをクリア
@@ -284,6 +316,10 @@ Sub btnSearchPrevShape_Click()
     On Error GoTo ErrorbtnSearchPrevShape_Click
 
     searchText = txtSearchText.Text
+
+    If searchText = "" Then
+        Exit Sub
+    End If
 
     If searchedShapes.Count > 0 Then
         Call ClearHighlightShape()      ' 文字列のハイライトをクリア
@@ -311,6 +347,10 @@ Sub btnReplaceShape_Click()
     searchText = txtSearchText.Text
     replaceText = txtReplaceText.Text
 
+    If searchText = "" Then
+        Exit Sub
+    End If
+
     If searchedShapes.Count > 0 Then
         Call ClearHighlightShape()      ' 文字列のハイライトをクリア
         Call ReplaceShapeText(searchText, replaceText)  ' 文字列を置換
@@ -336,6 +376,10 @@ Sub btnReplaceAll_Click()
 
     searchText = txtSearchText.Text
     replaceText = txtReplaceText.Text
+
+    If searchText = "" Then
+        Exit Sub
+    End If
 
     Call SearchShapes(cmbSearchRange.ListIndex, searchText)     ' 図形検索
     If searchedShapes.Count > 0 Then
