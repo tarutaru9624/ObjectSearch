@@ -43,13 +43,17 @@ Sub SearchShapes(rangeSpecified As rangeMode, searchText As String)
             For Each shape In searchSheet.Shapes            ' シート内の図形を取得
                 If shape.Type = msoGroup Then               ' 図形がグループ化されている時
                     For Each item In shape.GroupItems
-                        If InStr(1, item.TextFrame.Characters.Text, searchText, vbTextCompare) > 0 Then    ' 文字列検索 検索文字列が含まれる場合、戻り値に位置番号
-                            searchedShapes.Add item         ' コレクションに図形を追加
+                        If shp.TextFrame.HasText Then       ' テキスト入力が可能な図形か判定
+                            If InStr(1, item.TextFrame.Characters.Text, searchText, vbTextCompare) > 0 Then    ' 文字列検索 検索文字列が含まれる場合、戻り値に位置番号
+                                searchedShapes.Add item         ' コレクションに図形を追加
+                            End If
                         End If
                     Next item
                 Else                                        ' 図形がグループ化されていない時
-                    If InStr(1, shape.TextFrame.Characters.Text, searchText, vbTextCompare) > 0 Then    ' 文字列検索 検索文字列が含まれる場合、戻り値に位置番号
-                        searchedShapes.Add shape            ' コレクションに図形を追加
+                    If shp.TextFrame.HasText Then           ' テキスト入力が可能な図形か判定
+                        If InStr(1, shape.TextFrame.Characters.Text, searchText, vbTextCompare) > 0 Then    ' 文字列検索 検索文字列が含まれる場合、戻り値に位置番号
+                            searchedShapes.Add shape            ' コレクションに図形を追加
+                        End If
                     End If
                 End If
                 
@@ -63,13 +67,17 @@ Sub SearchShapes(rangeSpecified As rangeMode, searchText As String)
                 For Each shape In sheet.Shapes              ' シート内の図形を取得
                     If shape.Type = msoGroup Then           ' 図形がグループ化されている時
                         For Each item In shape.GroupItems
-                            If InStr(1, item.TextFrame.Characters.Text, searchText, vbTextCompare) > 0 Then    ' 文字列検索 検索文字列が含まれる場合、戻り値に位置番号
-                                searchedShapes.Add item     ' コレクションに図形を追加
+                            If shp.TextFrame.HasText Then       ' テキスト入力が可能な図形か判定
+                                If InStr(1, item.TextFrame.Characters.Text, searchText, vbTextCompare) > 0 Then    ' 文字列検索 検索文字列が含まれる場合、戻り値に位置番号
+                                    searchedShapes.Add item     ' コレクションに図形を追加
+                                End If
                             End If
                         Next item
-                    Else                                    ' 図形がグループ化されていない時
-                        If InStr(1, shape.TextFrame.Characters.Text, searchText, vbTextCompare) > 0 Then        ' 文字列検索 検索文字列が含まれる場合、戻り値に位置番号
-                            searchedShapes.Add shape        ' コレクションに図形を追加
+                    Else                                        ' 図形がグループ化されていない時
+                        If shp.TextFrame.HasText Then           ' テキスト入力が可能な図形か判定
+                            If InStr(1, shape.TextFrame.Characters.Text, searchText, vbTextCompare) > 0 Then        ' 文字列検索 検索文字列が含まれる場合、戻り値に位置番号
+                                searchedShapes.Add shape        ' コレクションに図形を追加
+                            End If
                         End If
                     End If
                 Next shape
